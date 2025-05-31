@@ -1,0 +1,757 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Definição do nó para listas
+typedef struct No {
+    int dado;
+    struct No* prox;
+} No;
+
+// =========================================
+// 1 - Inserção Básica
+// =========================================
+void inserir_inicio(No** head, int valor) {
+    No* novo = (No*)malloc(sizeof(No));
+    novo->dado = valor;
+    novo->prox = *head;
+    *head = novo;
+}
+
+void inserir_fim(No** head, int valor) {
+    No* novo = (No*)malloc(sizeof(No));
+    novo->dado = valor;
+    novo->prox = NULL;
+    if (*head == NULL) {
+        *head = novo;
+        return;
+    }
+    No* temp = *head;
+    while (temp->prox != NULL) {
+        temp = temp->prox;
+    }
+    temp->prox = novo;
+}
+
+// =========================================
+// 2 - Contagem de Nós
+// =========================================
+int contar_nos(No* head) {
+    int count = 0;
+    while (head != NULL) {
+        count++;
+        head = head->prox;
+    }
+    return count;
+}
+
+// =========================================
+// 3 - Busca de Elemento
+// =========================================
+int buscar_elemento(No* head, int valor) {
+    while (head != NULL) {
+        if (head->dado == valor) return 1;
+        head = head->prox;
+    }
+    return 0;
+}
+
+// =========================================
+// 4 - Inserção em Posição Específica
+// =========================================
+void inserir_posicao(No** head, int valor, int posicao) {
+    if (posicao == 0) {
+        inserir_inicio(head, valor);
+        return;
+    }
+    No* temp = *head;
+    for (int i = 0; temp != NULL && i < posicao - 1; i++) {
+        temp = temp->prox;
+    }
+    if (temp == NULL) return;
+    No* novo = (No*)malloc(sizeof(No));
+    novo->dado = valor;
+    novo->prox = temp->prox;
+    temp->prox = novo;
+}
+
+// =========================================
+// 5 - Remoção por Valor
+// =========================================
+void remover_valor(No** head, int valor) {
+    if (*head == NULL) return;
+    No* temp = *head;
+    if (temp->dado == valor) {
+        *head = temp->prox;
+        free(temp);
+        return;
+    }
+    while (temp->prox != NULL && temp->prox->dado != valor) {
+        temp = temp->prox;
+    }
+    if (temp->prox == NULL) return;
+    No* toDelete = temp->prox;
+    temp->prox = toDelete->prox;
+    free(toDelete);
+}
+
+// =========================================
+// 6 - Inversão Iterativa
+// =========================================
+void inverter_lista(No** head) {
+    No* prev = NULL;
+    No* current = *head;
+    No* next = NULL;
+    while (current != NULL) {
+        next = current->prox;
+        current->prox = prev;
+        prev = current;
+        current = next;
+    }
+    *head = prev;
+}
+
+// =========================================
+// 7 - Nó do Meio
+// =========================================
+No* encontrar_meio(No* head) {
+    No *slow = head, *fast = head;
+    while (fast != NULL && fast->prox != NULL) {
+        slow = slow->prox;
+        fast = fast->prox->prox;
+    }
+    return slow;
+}
+
+// =========================================
+// 8 - Impressão Reversa com Pilha
+// =========================================
+typedef struct Pilha {
+    int dados[100];
+    int topo;
+} Pilha;
+
+void inicializar_pilha(Pilha* p) {
+    p->topo = -1;
+}
+
+int esta_vazia(Pilha* p) {
+    return p->topo == -1;
+}
+
+void push(Pilha* p, int valor) {
+    p->dados[++p->topo] = valor;
+}
+
+int pop(Pilha* p) {
+    return p->dados[p->topo--];
+}
+
+void imprimir_reverso(No* head) {
+    Pilha p;
+    inicializar_pilha(&p);
+    No* atual = head;
+    while (atual != NULL) {
+        push(&p, atual->dado);
+        atual = atual->prox;
+    }
+    while (!esta_vazia(&p)) {
+        printf("%d ", pop(&p));
+    }
+    printf("\n");
+}
+
+// =========================================
+// 9 - Pilha com Array
+// =========================================
+typedef struct PilhaArray {
+    int dados[100];
+    int topo;
+} PilhaArray;
+
+void inicializar_pilha_array(PilhaArray* p) {
+    p->topo = -1;
+}
+
+void push_array(PilhaArray* p, int valor) {
+    p->dados[++p->topo] = valor;
+}
+
+int pop_array(PilhaArray* p) {
+    return p->dados[p->topo--];
+}
+
+int topo_array(PilhaArray* p) {
+    return p->dados[p->topo];
+}
+
+int esta_vazia_array(PilhaArray* p) {
+    return p->topo == -1;
+}
+
+// =========================================
+// 10 - Pilha com Lista Encadeada
+// =========================================
+typedef struct NoPilha {
+    int dado;
+    struct NoPilha* prox;
+} NoPilha;
+
+void push_lista(NoPilha** topo, int valor) {
+    NoPilha* novo = (NoPilha*)malloc(sizeof(NoPilha));
+    novo->dado = valor;
+    novo->prox = *topo;
+    *topo = novo;
+}
+
+int pop_lista(NoPilha** topo) {
+    if (*topo == NULL) return -1;
+    int valor = (*topo)->dado;
+    NoPilha* temp = *topo;
+    *topo = (*topo)->prox;
+    free(temp);
+    return valor;
+}
+
+int topo_lista(NoPilha* topo) {
+    if (topo == NULL) return -1;
+    return topo->dado;
+}
+
+int esta_vazia_lista(NoPilha* topo) {
+    return topo == NULL;
+}
+
+// =========================================
+// 11 - Verificação de Parênteses Balanceados
+// =========================================
+int verificar_balanceamento(char* str) {
+    PilhaArray p;
+    inicializar_pilha_array(&p);
+    for (int i = 0; str[i]; i++) {
+        char ch = str[i];
+        if (ch == '(' || ch == '{' || ch == '[') {
+            push_array(&p, ch);
+        } else if (ch == ')' || ch == '}' || ch == ']') {
+            if (esta_vazia_array(&p)) return 0;
+            char topo = pop_array(&p);
+            if ((ch == ')' && topo != '(') ||
+                (ch == '}' && topo != '{') ||
+                (ch == ']' && topo != '[')) {
+                return 0;
+            }
+        }
+    }
+    return esta_vazia_array(&p);
+}
+
+// =========================================
+// 12 - Inversão de String
+// =========================================
+void inverter_string(char* str) {
+    PilhaArray p;
+    inicializar_pilha_array(&p);
+    for (int i = 0; str[i]; i++) {
+        push_array(&p, str[i]);
+    }
+    for (int i = 0; str[i]; i++) {
+        str[i] = pop_array(&p);
+    }
+}
+
+// =========================================
+// 13 - Verificação de Palíndromo
+// =========================================
+int verificar_palindromo(char* str) {
+    int len = strlen(str);
+    PilhaArray p;
+    inicializar_pilha_array(&p);
+    for (int i = 0; i < len; i++) {
+        push_array(&p, str[i]);
+    }
+    for (int i = 0; i < len; i++) {
+        if (str[i] != pop_array(&p)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// =========================================
+// 14 - Ordenação de Pilha
+// =========================================
+void ordenar_pilha(PilhaArray* original) {
+    PilhaArray aux;
+    inicializar_pilha_array(&aux);
+
+    while (!esta_vazia_array(original)) {
+        int temp = pop_array(original);
+
+        while (!esta_vazia_array(&aux) && topo_array(&aux) > temp) {
+            push_array(original, pop_array(&aux));
+        }
+        push_array(&aux, temp);
+    }
+
+    while (!esta_vazia_array(&aux)) {
+        push_array(original, pop_array(&aux));
+    }
+}
+// =========================================
+// 15 - Fila com Array Circular
+// =========================================
+typedef struct FilaCircular {
+    int dados[100];
+    int inicio, fim, tamanho;
+} FilaCircular;
+
+void inicializar_fila(FilaCircular* f) {
+    f->inicio = 0;
+    f->fim = 0;
+    f->tamanho = 0;
+}
+
+int esta_vazia_fila(FilaCircular* f) {
+    return f->tamanho == 0;
+}
+
+int esta_cheia_fila(FilaCircular* f) {
+    return f->tamanho == 100;
+}
+
+void enfileirar(FilaCircular* f, int valor) {
+    if (esta_cheia_fila(f)) return;
+    f->dados[f->fim] = valor;
+    f->fim = (f->fim + 1) % 100;
+    f->tamanho++;
+}
+
+int desenfileirar(FilaCircular* f) {
+    if (esta_vazia_fila(f)) return -1;
+    int valor = f->dados[f->inicio];
+    f->inicio = (f->inicio + 1) % 100;
+    f->tamanho--;
+    return valor;
+}
+
+int frente(FilaCircular* f) {
+    if (esta_vazia_fila(f)) return -1;
+    return f->dados[f->inicio];
+}
+
+// =========================================
+// 16 - Fila com Lista Encadeada
+// =========================================
+typedef struct NoFila {
+    int dado;
+    struct NoFila* prox;
+} NoFila;
+
+typedef struct {
+    NoFila* inicio;
+    NoFila* fim;
+} FilaLista;
+
+void inicializar_fila_lista(FilaLista* f) {
+    f->inicio = NULL;
+    f->fim = NULL;
+}
+
+void enfileirar_lista(FilaLista* f, int valor) {
+    NoFila* novo = (NoFila*)malloc(sizeof(NoFila));
+    novo->dado = valor;
+    novo->prox = NULL;
+    if (f->fim == NULL) {
+        f->inicio = f->fim = novo;
+    } else {
+        f->fim->prox = novo;
+        f->fim = novo;
+    }
+}
+
+int desenfileirar_lista(FilaLista* f) {
+    if (f->inicio == NULL) return -1;
+    int valor = f->inicio->dado;
+    NoFila* temp = f->inicio;
+    f->inicio = f->inicio->prox;
+    if (f->inicio == NULL) f->fim = NULL;
+    free(temp);
+    return valor;
+}
+
+// =========================================
+// 17 - Geração de Números Binários
+// =========================================
+typedef struct NoString {
+    char str[20];
+    struct NoString* prox;
+} NoString;
+
+typedef struct {
+    NoString* inicio;
+    NoString* fim;
+} FilaString;
+
+void inicializar_fila_string(FilaString* f) {
+    f->inicio = f->fim = NULL;
+}
+
+void enfileirar_string(FilaString* f, char* str) {
+    NoString* novo = (NoString*)malloc(sizeof(NoString));
+    strcpy(novo->str, str);
+    novo->prox = NULL;
+    if (f->fim == NULL) {
+        f->inicio = f->fim = novo;
+    } else {
+        f->fim->prox = novo;
+        f->fim = novo;
+    }
+}
+
+char* desenfileirar_string(FilaString* f) {
+    if (f->inicio == NULL) return NULL;
+    NoString* temp = f->inicio;
+    f->inicio = f->inicio->prox;
+    if (f->inicio == NULL) f->fim = NULL;
+    char* str = temp->str;
+    free(temp);
+    return str;
+}
+
+void gerar_binarios(int n) {
+    FilaString fila;
+    inicializar_fila_string(&fila);
+    enfileirar_string(&fila, "1");
+
+    for (int i = 0; i < n; i++) {
+        NoString* temp = fila.inicio;
+        printf("%s ", temp->str);
+
+        char str1[20], str2[20];
+        sprintf(str1, "%s0", temp->str);
+        sprintf(str2, "%s1", temp->str);
+        enfileirar_string(&fila, str1);
+        enfileirar_string(&fila, str2);
+        desenfileirar_string(&fila);
+    }
+    printf("\n");
+}
+
+// =========================================
+// 18 - Inversão dos Primeiros K Elementos
+// =========================================
+void inverter_primeiros_k(FilaCircular* fila, int k) {
+    PilhaArray p;
+    inicializar_pilha_array(&p);
+
+    for (int i = 0; i < k; i++) {
+        push_array(&p, desenfileirar(fila));
+    }
+
+    while (!esta_vazia_array(&p)) {
+        enfileirar(fila, pop_array(&p));
+    }
+
+    int tamanho = fila->tamanho;
+    for (int i = 0; i < tamanho - k; i++) {
+        enfileirar(fila, desenfileirar(fila));
+    }
+}
+
+// =========================================
+// 19 - Detecção de Ciclo (Algoritmo de Floyd)
+// =========================================
+int detectar_ciclo(No* head) {
+    No *slow = head, *fast = head;
+    while (fast != NULL && fast->prox != NULL) {
+        slow = slow->prox;
+        fast = fast->prox->prox;
+        if (slow == fast) return 1;
+    }
+    return 0;
+}
+
+// =========================================
+// 20 - União de Listas Ordenadas
+// =========================================
+No* unir_listas_ordenadas(No* l1, No* l2) {
+    No dummy;
+    No* tail = &dummy;
+    dummy.prox = NULL;
+
+    while (l1 != NULL && l2 != NULL) {
+        if (l1->dado < l2->dado) {
+            tail->prox = l1;
+            l1 = l1->prox;
+        } else {
+            tail->prox = l2;
+            l2 = l2->prox;
+        }
+        tail = tail->prox;
+    }
+
+    tail->prox = (l1 != NULL) ? l1 : l2;
+    return dummy.prox;
+}
+// =========================================
+// 21 - Remoção de Todas as Ocorrências
+// =========================================
+void remover_todas_ocorrencias(No** head, int valor) {
+    while (*head != NULL && (*head)->dado == valor) {
+        No* temp = *head;
+        *head = (*head)->prox;
+        free(temp);
+    }
+    No* atual = *head;
+    while (atual != NULL && atual->prox != NULL) {
+        if (atual->prox->dado == valor) {
+            No* temp = atual->prox;
+            atual->prox = atual->prox->prox;
+            free(temp);
+        } else {
+            atual = atual->prox;
+        }
+    
+
+// =========================================
+// 22 - Intersecção de Listas
+// =========================================
+No* encontrar_intersecao(No* l1, No* l2) {
+    No* a = l1;
+    No* b = l2;
+
+    while (a != b) {
+        a = (a == NULL) ? l2 : a->prox;
+        b = (b == NULL) ? l1 : b->prox;
+    }
+    return a; // pode ser NULL se não há interseção
+}
+
+// =========================================
+// 23 - Rotação de Lista
+// =========================================
+void rotacionar_lista(No** head, int k) {
+    if (k == 0 || *head == NULL) return;
+
+    No* atual = *head;
+    int count = 1;
+    while (atual->prox != NULL) {
+        atual = atual->prox;
+        count++;
+    }
+
+    atual->prox = *head; // criar ciclo
+    k = k % count;
+
+    No* novo_fim = *head;
+    for (int i = 0; i < count - k - 1; i++) {
+        novo_fim = novo_fim->prox;
+    }
+    *head = novo_fim->prox;
+    novo_fim->prox = NULL;
+}
+
+// =========================================
+// 24 - Pilha com Mínimo em O(1)
+// =========================================
+typedef struct PilhaMin {
+    int dados[100];
+    int min[100];
+    int topo;
+} PilhaMin;
+
+void inicializar_pilha_min(PilhaMin* p) {
+    p->topo = -1;
+}
+
+void push_min(PilhaMin* p, int valor) {
+    if (p->topo == -1) {
+        p->dados[++p->topo] = valor;
+        p->min[p->topo] = valor;
+    } else {
+        p->dados[++p->topo] = valor;
+        int menor = (valor < p->min[p->topo - 1]) ? valor : p->min[p->topo - 1];
+        p->min[p->topo] = menor;
+    }
+}
+
+int pop_min(PilhaMin* p) {
+    return p->dados[p->topo--];
+}
+
+int obter_min(PilhaMin* p) {
+    return p->min[p->topo];
+}
+
+// =========================================
+// 25 - Duas Pilhas em um Array
+// =========================================
+typedef struct DuasPilhas {
+    int dados[100];
+    int topo1, topo2;
+} DuasPilhas;
+
+void inicializar_duas_pilhas(DuasPilhas* p) {
+    p->topo1 = -1;
+    p->topo2 = 100;
+}
+
+void push1(DuasPilhas* p, int valor) {
+    if (p->topo1 + 1 < p->topo2) {
+        p->dados[++p->topo1] = valor;
+    }
+}
+
+void push2(DuasPilhas* p, int valor) {
+    if (p->topo1 + 1 < p->topo2) {
+        p->dados[--p->topo2] = valor;
+    }
+}
+
+int pop1(DuasPilhas* p) {
+    return p->dados[p->topo1--];
+}
+
+int pop2(DuasPilhas* p) {
+    return p->dados[p->topo2++];
+}
+
+// =========================================
+// 26 - Avaliação de Expressão Pós-fixa
+// =========================================
+int avaliar_posfixa(char* expr) {
+    PilhaArray p;
+    inicializar_pilha_array(&p);
+    for (int i = 0; expr[i]; i++) {
+        if (expr[i] >= '0' && expr[i] <= '9') {
+            push_array(&p, expr[i] - '0');
+        } else {
+            int val2 = pop_array(&p);
+            int val1 = pop_array(&p);
+            switch (expr[i]) {
+                case '+': push_array(&p, val1 + val2); break;
+                case '-': push_array(&p, val1 - val2); break;
+                case '*': push_array(&p, val1 * val2); break;
+                case '/': push_array(&p, val1 / val2); break;
+            }
+        }
+    }
+    return pop_array(&p);
+}
+
+// =========================================
+// 27 - Fila usando Duas Pilhas
+// =========================================
+typedef struct FilaDuasPilhas {
+    PilhaArray p1, p2;
+} FilaDuasPilhas;
+
+void inicializar_fila_duas_pilhas(FilaDuasPilhas* f) {
+    inicializar_pilha_array(&f->p1);
+    inicializar_pilha_array(&f->p2);
+}
+
+void enfileirar_duas_pilhas(FilaDuasPilhas* f, int valor) {
+    push_array(&f->p1, valor);
+}
+
+int desenfileirar_duas_pilhas(FilaDuasPilhas* f) {
+    if (esta_vazia_array(&f->p2)) {
+        while (!esta_vazia_array(&f->p1)) {
+            push_array(&f->p2, pop_array(&f->p1));
+        }
+    }
+    return pop_array(&f->p2);
+}
+
+// =========================================
+// 28 - Inversão em Grupos de K Nós
+// =========================================
+No* inverter_grupos(No* head, int k) {
+    No* atual = head;
+    No* prev = NULL;
+    No* prox = NULL;
+    int count = 0;
+
+    No* temp = head;
+    for (int i = 0; i < k && temp != NULL; i++) {
+        temp = temp->prox;
+    }
+    if (temp == NULL && count < k) return head;
+
+    count = 0;
+    while (atual != NULL && count < k) {
+        prox = atual->prox;
+        atual->prox = prev;
+        prev = atual;
+        atual = prox;
+        count++;
+    }
+
+    if (prox != NULL) {
+        head->prox = inverter_grupos(prox, k);
+    }
+
+    return prev;
+}
+
+// =========================================
+// 29 - Palíndromo com Espaço O(1)
+// =========================================
+int eh_palindromo(No* head) {
+    if (head == NULL || head->prox == NULL) return 1;
+
+    No* slow = head;
+    No* fast = head;
+    No* prev = NULL;
+    No* temp;
+
+    // Encontrar o meio
+    while (fast != NULL && fast->prox != NULL) {
+        fast = fast->prox->prox;
+
+        temp = slow->prox;
+        slow->prox = prev;
+        prev = slow;
+        slow = temp;
+    }
+
+    No* segunda_metade = (fast == NULL) ? slow : slow->prox;
+    No* primeira_metade = prev;
+
+    // Comparar as duas metades
+    while (primeira_metade != NULL && segunda_metade != NULL) {
+        if (primeira_metade->dado != segunda_metade->dado) {
+            return 0;
+        }
+        primeira_metade = primeira_metade->prox;
+        segunda_metade = segunda_metade->prox;
+    }
+
+    return 1;
+}
+
+// =========================================
+// 30 - Trapping Rain Water
+// =========================================
+int calcular_agua(int* arr, int n) {
+    int esquerda[n], direita[n];
+    int agua = 0;
+
+    esquerda[0] = arr[0];
+    for (int i = 1; i < n; i++) {
+        esquerda[i] = (arr[i] > esquerda[i - 1]) ? arr[i] : esquerda[i - 1];
+    }
+
+    direita[n - 1] = arr[n - 1];
+    for (int i = n - 2; i >= 0; i--) {
+        direita[i] = (arr[i] > direita[i + 1]) ? arr[i] : direita[i + 1];
+    }
+
+    for (int i = 0; i < n; i++) {
+        int nivel_agua = (esquerda[i] < direita[i]) ? esquerda[i] : direita[i];
+        agua += nivel_agua - arr[i];
+    }
+
+    return agua;
+}
